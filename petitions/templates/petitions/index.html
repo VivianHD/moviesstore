@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-3">
+    <div class="container">
+        <div class="row mt-3">
+            <div class="col mx-auto mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2>Movie Petitions</h2>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'petitions.create' %}" class="btn bg-dark text-white">Create New Petition</a>
+                    {% endif %}
+                </div>
+                <hr />
+                
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                {% if template_data.petitions %}
+                    {% for petition in template_data.petitions %}
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ petition.title }}</h5>
+                            <p class="card-text">{{ petition.description }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">
+                                        Created by {{ petition.created_by.username }} on {{ petition.created_at|date:"M d, Y" }}
+                                    </small>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-success me-2">
+                                        {{ petition.yes_votes_count }} Yes vote{{ petition.yes_votes_count|pluralize }}
+                                    </span>
+                                    {% if user.is_authenticated %}
+                                        {% if petition.id in template_data.user_votes %}
+                                            <button class="btn btn-outline-success btn-sm" disabled>Voted ✓</button>
+                                        {% else %}
+                                            <a href="{% url 'petitions.vote' petition_id=petition.id %}" class="btn btn-success btn-sm">Vote Yes</a>
+                                        {% endif %}
+                                    {% else %}
+                                        <a href="{% url 'accounts.login' %}" class="btn btn-outline-success btn-sm">Login to Vote</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">No petitions yet. Be the first to create one!</p>
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'petitions.create' %}" class="btn bg-dark text-white">Create First Petition</a>
+                        {% else %}
+                        <a href="{% url 'accounts.login' %}" class="btn bg-dark text-white">Login to Create Petition</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
