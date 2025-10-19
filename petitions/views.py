@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Petition, Vote
 from .forms import PetitionForm
@@ -20,7 +20,7 @@ def index(request):
 def create(request):
     template_data = {}
     template_data['title'] = 'Create Petition'
-    
+
     if request.method == 'POST':
         form = PetitionForm(request.POST)
         if form.is_valid():
@@ -29,22 +29,24 @@ def create(request):
             petition.save()
             messages.success(request, 'Your petition has been created successfully!')
             return redirect('petitions.index')
+        else:
+            template_data['form'] = form
     else:
         form = PetitionForm()
-    
-    template_data['form'] = form
+        template_data['form'] = form
+
     return render(request, 'petitions/create.html', {'template_data': template_data})
 
 @login_required
 def vote(request, petition_id):
     petition = get_object_or_404(Petition, id=petition_id)
-    
+
     existing_vote = Vote.objects.filter(petition=petition, user=request.user).first()
-    
+
     if existing_vote:
         messages.info(request, 'You have already voted on this petition.')
     else:
         Vote.objects.create(petition=petition, user=request.user, vote_type='yes')
         messages.success(request, 'Your vote has been recorded!')
-    
+
     return redirect('petitions.index')
